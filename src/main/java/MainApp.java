@@ -2,6 +2,7 @@ import wyjatki.TooManyPatientException;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
@@ -66,11 +67,12 @@ public class MainApp {
         BigInteger pesel = scanner.nextBigInteger();
         System.out.println("Podaj stan portfela: ");
         Double wallet = scanner.nextDouble();
+        String stanZdrowia = scanner.next();
 
         if (patientService.isRegistered(pesel)) {
             throw new TooManyPatientException();
         }
-        patientList.add(new Patient(name, surname, pesel, wallet));
+        patientList.add(new Patient(name, surname, pesel, wallet, stanZdrowia));
         apachePOIExcelWrite.createExcel(patientList);
 
         System.out.println("Udało się zarejestrować nowego pacjenta");
@@ -119,12 +121,12 @@ public class MainApp {
                 System.out.println("Podaj pesel: ");
                 String pesel = scanner.next();
                 patientList = patientService.findPatientlist(new BigInteger(pesel));
-                break;
 
-            System.out.println("Wybierz pacjenta : ");
-            action = scanner.nextInt();
-            Patient p = patientList.get(action - 1);
-            edytujPacjenta(p);
+
+                System.out.println("Wybierz pacjenta : ");
+                action = scanner.nextInt();
+                Patient p = patientList.get(action - 1);
+                edytujPacjenta(p);
         }
     }
 
@@ -156,6 +158,8 @@ public class MainApp {
     }
 
     private static void coronaTest() {
+        int price = 500;
+        double pay;
         System.out.println("Wyszukaj pacjenta po: \n0 - Zakończ działanie  \n1 - numerze PESEL");
         Integer action1 = scanner.nextInt();
 
@@ -168,24 +172,38 @@ public class MainApp {
                 System.out.println("Podaj pesel: ");
                 String pesel = scanner.next();
                 patientTemp1 = patientService.findPatientOrNull(new BigInteger(pesel));
-                break;
-            default:
-                break;
+                for (Patient patient : patientList) {
+                    if (patient.getWallet() > price) {
+                        List<Patient> withTest = new ArrayList<>(Arrays.asList(patient));
+                        for (Patient patient1 : withTest) {
+                            pay = patient.getWallet() - price;
+                            patient.setWallet(pay);
+                        }
+                        System.out.println("wynik testu dla pacjenta: " + patientTemp1.getStanZdrowia());
+                    } else if (patient.getWallet() < price) {
+                        List<Patient> withoutTest = new ArrayList<>(Arrays.asList(patient));
+                        for (Patient patient2 : withoutTest) {
+                            System.out.println("Brak wystarczających środków dla pacjenta: " + patient2);
+                        }
+
+                    }
+
+                }
+        }
+        ApachePOIExcelWrite.createExcel(patientList);
+    }
+
+    public static void edytujPacjenta(Patient patient) {
+        patient.wyswietlPodstawoweDane();
+        System.out.println("Czy chcesz przeprowadzić test na koronawirusa ? ");
+        System.out.println("1. Tak");
+        System.out.println("2. Nie");
+        int action = scanner.nextInt();
+        if (action == 1) {
+            coronaTest();
+        } else {
+            chooseTypeSearching(action);
         }
 
     }
-
-     public static void edytujPacjenta(Patient patient) {
-         patient.wyswietlPodstawoweDane();
-         System.out.println("Czy chcesz przeprowadzić test na koronawirusa ? ");
-         System.out.println("1. Tak");
-         System.out.println("2. Nie");
-         int action = scanner.nextInt();
-         if (action == 1) {
-             coronaTest(patient);
-         } else {
-             chooseTypeSearching();
-         }
-
-     }
-    }
+}

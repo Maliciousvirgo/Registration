@@ -6,10 +6,12 @@ import java.math.BigInteger;
 @Data
 @AllArgsConstructor
 public class Patient {
+
     private String name;
     private String surname;
     private BigInteger pesel;
     private double wallet;
+    private String stanZdrowia;
 
     public void wyswietlPodstawoweDane()
     {
@@ -20,4 +22,6 @@ public class Patient {
     {
         System.out.println("Stan portfela : " +  wallet);
     }
+
+
 }
